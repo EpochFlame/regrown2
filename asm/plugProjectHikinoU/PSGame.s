@@ -3368,36 +3368,53 @@
 /* 80336958 00333898  98 1E 00 00 */	stb r0, 0(r30)
 .L_8033695C:
 /* 8033695C 0033389C  7F 83 E3 78 */	mr r3, r28
-/* 80336960 003338A0  81 9C 00 00 */	lwz r12, 0(r28)
-/* 80336964 003338A4  81 8C 00 08 */	lwz r12, 8(r12)
-/* 80336968 003338A8  7D 89 03 A6 */	mtctr r12
-/* 8033696C 003338AC  4E 80 04 21 */	bctrl 
-/* 80336970 003338B0  54 60 06 3F */	clrlwi. r0, r3, 0x18
-/* 80336974 003338B4  41 82 00 D0 */	beq .L_80336A44
-/* 80336978 003338B8  88 1C 00 06 */	lbz r0, 6(r28)
-/* 8033697C 003338BC  28 00 00 03 */	cmplwi r0, 3
-/* 80336980 003338C0  40 82 00 C4 */	bne .L_80336A44
-/* 80336984 003338C4  80 7C 00 44 */	lwz r3, 0x44(r28)
-/* 80336988 003338C8  3C 03 8B 9B */	subis r0, r3, 0x7465
-/* 8033698C 003338CC  28 00 73 74 */	cmplwi r0, 0x7374
-/* 80336990 003338D0  40 82 00 0C */	bne .L_8033699C
-/* 80336994 003338D4  38 00 00 00 */	li r0, 0
-/* 80336998 003338D8  48 00 00 10 */	b .L_803369A8
-.L_8033699C:
-/* 8033699C 003338DC  88 7C 00 47 */	lbz r3, 0x47(r28)
-/* 803369A0 003338E0  38 03 FF CF */	addi r0, r3, -49
-/* 803369A4 003338E4  54 00 06 3E */	clrlwi r0, r0, 0x18
-.L_803369A8:
-/* 803369A8 003338E8  54 00 06 3E */	clrlwi r0, r0, 0x18
-/* 803369AC 003338EC  28 00 00 03 */	cmplwi r0, 3
-/* 803369B0 003338F0  40 82 00 94 */	bne .L_80336A44
-/* 803369B4 003338F4  7F 83 E3 78 */	mr r3, r28
-/* 803369B8 003338F8  81 9C 00 00 */	lwz r12, 0(r28)
-/* 803369BC 003338FC  81 8C 00 0C */	lwz r12, 0xc(r12)
-/* 803369C0 00333900  7D 89 03 A6 */	mtctr r12
-/* 803369C4 00333904  4E 80 04 21 */	bctrl 
-/* 803369C8 00333908  54 60 06 3F */	clrlwi. r0, r3, 0x18
-/* 803369CC 0033390C  40 82 00 78 */	bne .L_80336A44
+# cinfo is in r3
+bl useYakushima4__Q26PSGame13CaveFloorInfoFv
+clrlwi. r0, r3, 0x18
+beq .L_80336A44
+
+# /* 80336960 003338A0  81 9C 00 00 */	lwz r12, 0(r28)
+# /* 80336964 003338A4  81 8C 00 08 */	lwz r12, 8(r12)
+# /* 80336968 003338A8  7D 89 03 A6 */	mtctr r12
+# /* 8033696C 003338AC  4E 80 04 21 */	bctrl # is cave floor
+
+
+# /* 80336970 003338B0  54 60 06 3F */	clrlwi. r0, r3, 0x18
+# /* 80336974 003338B4  41 82 00 D0 */	beq .L_80336A44
+# /* 80336978 003338B8  88 1C 00 06 */	lbz r0, 6(r28)
+# /* 8033697C 003338BC  28 00 00 03 */	cmplwi r0, 3 # is course yakushima
+
+# /* 80336980 003338C0  40 82 00 C4 */	bne .L_80336A44
+
+# inline getCaveNoFromID start
+# /* 80336984 003338C4  80 7C 00 44 */	lwz r3, 0x44(r28)
+# /* 80336988 003338C8  3C 03 8B 9B */	subis r0, r3, 0x7465
+# /* 8033698C 003338CC  28 00 73 74 */	cmplwi r0, 0x7374
+# /* 80336990 003338D0  40 82 00 0C */	bne .L_8033699C
+# /* 80336994 003338D4  38 00 00 00 */	li r0, 0
+# /* 80336998 003338D8  48 00 00 10 */	b .L_803369A8
+# .L_8033699C:
+# /* 8033699C 003338DC  88 7C 00 47 */	lbz r3, 0x47(r28)
+# /* 803369A0 003338E0  38 03 FF CF */	addi r0, r3, -49
+# /* 803369A4 003338E4  54 00 06 3E */	clrlwi r0, r0, 0x18
+# .L_803369A8:
+# /* 803369A8 003338E8  54 00 06 3E */	clrlwi r0, r0, 0x18
+
+# inline getCaveNoFromID end
+
+# /* 803369AC 003338EC  28 00 00 03 */	cmplwi r0, 3 # getCaveNoFromID() == 3 ? 
+# /* 803369B0 003338F0  40 82 00 94 */	bne .L_80336A44
+# /* 803369B4 003338F4  7F 83 E3 78 */	mr r3, r28
+# /* 803369B8 003338F8  81 9C 00 00 */	lwz r12, 0(r28)
+# /* 803369BC 003338FC  81 8C 00 0C */	lwz r12, 0xc(r12)
+# /* 803369C0 00333900  7D 89 03 A6 */	mtctr r12
+# /* 803369C4 00333904  4E 80 04 21 */	bctrl # isBossFloor
+
+
+# /* 803369C8 00333908  54 60 06 3F */	clrlwi. r0, r3, 0x18
+# /* 803369CC 0033390C  40 82 00 78 */	bne .L_80336A44 # succeed if isBossFloor is false
+
+
 /* 803369D0 00333910  38 60 00 6C */	li r3, 0x6c
 /* 803369D4 00333914  4B CE D4 D1 */	bl __nw__FUl
 /* 803369D8 00333918  7C 78 1B 79 */	or. r24, r3, r3
@@ -5061,6 +5078,7 @@
 /* 803380A8 00334FE8  4E 80 00 20 */	blr 
 .endfn PSGetDirectedMainBgmA__Fv
 
+.section .text, "ax", unique, 1
 .fn "__dt__Q28PSSystem39SingletonBase<Q26PSGame13ConductorList>Fv", weak
 /* 803380AC 00334FEC  94 21 FF F0 */	stwu r1, -0x10(r1)
 /* 803380B0 00334FF0  7C 08 02 A6 */	mflr r0
@@ -5159,6 +5177,7 @@
 /* 803381E8 00335128  4B FF C0 A8 */	b __dt__Q26PSGame13ConductorListFv
 .endfn "@28@__dt__Q26PSGame13ConductorListFv"
 
+.section .text, "ax", unique, 2
 .fn isCaveFloor__Q26PSGame9SceneInfoFv, weak
 /* 803381EC 0033512C  38 60 00 00 */	li r3, 0
 /* 803381F0 00335130  4E 80 00 20 */	blr 
@@ -5169,6 +5188,7 @@
 /* 803381F8 00335138  4E 80 00 20 */	blr 
 .endfn curSceneIsBigBossFloor__Q26PSGame11PikSceneMgrFv
 
+.section .text, "ax", unique, 3
 .fn exec__Q28PSSystem8SceneMgrFv, weak
 /* 803381FC 0033513C  94 21 FF F0 */	stwu r1, -0x10(r1)
 /* 80338200 00335140  7C 08 02 A6 */	mflr r0
@@ -5191,6 +5211,7 @@
 /* 80338234 00335174  4E 80 00 20 */	blr 
 .endfn init__Q28PSSystem5SceneFv
 
+.section .text, "ax", unique, 4
 .fn __dt__Q29PSAutoBgm15ConductorArcMgrFv, weak
 /* 80338238 00335178  94 21 FF F0 */	stwu r1, -0x10(r1)
 /* 8033823C 0033517C  7C 08 02 A6 */	mflr r0
@@ -5245,6 +5266,7 @@
 /* 803382E8 00335228  4E 80 00 20 */	blr 
 .endfn __dt__Q36PSGame10SoundTable11CategoryMgrFv
 
+.section .text, "ax", unique, 5
 .fn "__dt__Q28PSSystem24ArcMgr<Q26PSGame6BASARC>Fv", weak
 /* 803382EC 0033522C  94 21 FF F0 */	stwu r1, -0x10(r1)
 /* 803382F0 00335230  7C 08 02 A6 */	mflr r0

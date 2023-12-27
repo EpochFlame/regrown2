@@ -102,13 +102,15 @@ struct CaveFloorInfo : public SceneInfo {
 	// 	*/
 	// }
 
-	u32 getCaveNoFromID();
+	bool useYakushima4();
+
+	u8 getCaveNoFromID();
 
 	// _00     = VTBL
 	// _00-_38 = SceneInfo
 	uint mAlphaType;           // _38
 	uint mBetaType;            // _3C
-	u8 mFloorNum;              // _40
+	u8 mFloorNum;              // _40 - NOTE: this should really be called currFloorNo or something similar
 	u32 mCaveID;               // _44
 	u8 _48;                    // _48
 	u8 mChallengeModeStageNum; // _49
