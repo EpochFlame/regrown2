@@ -1,5 +1,6 @@
 DROUGHT_FILES:=\
 	$(BUILD_DIR)/src/DroughtMod/caveHole.o\
+	$(BUILD_DIR)/src/DroughtMod/yakushimaMusic.o\
 
 
 DEPENDS += $(DROUGHT_FILES:.o=.d)
