@@ -29,7 +29,7 @@ Mgr::Mgr(int objLimit, u8 modelType)
  * Address:	802FBD6C
  * Size:	000048
  */
-void Mgr::doAlloc() { init(new DangoMushi::Parms); }
+void Mgr::doAlloc() { init(new Parms); }
 
 /*
  * --INFO--

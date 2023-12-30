@@ -18,21 +18,29 @@ namespace HallowMushi
 {
 
 Obj::Obj() {
-    createEffect();
+	
 }
 
 void Obj::createEffect() {
-	for (int i = 0; i < ARRAY_SIZE(mTrailArray); i++) {
+	for (int i = 0; i < mTrailCount; i++) {
 		mTrailArray[i].mEffect = new efx::THallow;
 		mTrailArray[i].mActive = false;
 	}
 }
 
-void Trail::create(Vector3f& position) {
+void Obj::onInit(CreatureInitArg* arg) {
+	DangoMushi::Obj::onInit(arg);
+
+	mTrailCount = *C_PARMS->mProperHallowParms.mTrailLingerTime() / *C_PARMS->mProperHallowParms.mTrailPeriod();
+	mTrailArray = new Trail[mTrailCount];
+    createEffect();
+}
+
+void Trail::create(Vector3f& position, f32 scale, f32 time) {
 	mPosition = position;
-	mTimer    = HALLOW_TRAIL_LINGER_TIME;
+	mTimer    = time;
 	mActive   = true;
-	efx::Arg arg (mPosition);
+	efx::ArgScaleTime arg (mPosition, scale, time);
 	mEffect->create(&arg);
 }
 
@@ -48,14 +56,14 @@ void Trail::update(EnemyBase* parent) {
 		return;
 	}
 
-	Sys::Sphere sphere (mPosition, TRAIL_RADIUS_SIZE);
+	Sys::Sphere sphere (mPosition, *CG_PARMS(parent)->mProperHallowParms.mTrailRadiusSize());
 
 	CellIteratorArg arg (sphere);
 	CellIterator iCell = arg;
 
 	CI_LOOP(iCell) {
 		CellObject* obj = *iCell;
-		if (FABS(obj->getPosition().y - mPosition.y) > TRAIL_HEIGHT) {
+		if (FABS(obj->getPosition().y - mPosition.y) > *CG_PARMS(parent)->mProperHallowParms.mTrailHeight()) {
 			continue;
 		}
 
@@ -64,20 +72,20 @@ void Trail::update(EnemyBase* parent) {
 			InteractGas gas(parent, 0.0f);
 			piki->stimulate(gas);
 		}
-		else if (obj->isNavi()) {
-			Navi* navi = static_cast<Navi*>(obj);
-			InteractBubble gas(parent, 5.0f);
-			navi->stimulate(gas);
-		}
+		// else if (obj->isNavi()) {
+		// 	Navi* navi = static_cast<Navi*>(obj);
+		// 	InteractBubble gas(parent, 5.0f);
+		// 	navi->stimulate(gas);
+		// }
 		
 	}
 }
 
 void Obj::addTrail(Vector3f& pos) {
 	// if there is an open trail, take it
-	for (int i = 0; i < ARRAY_SIZE(mTrailArray); i++) {
+	for (int i = 0; i < mTrailCount; i++) {
 		if (!mTrailArray[i].mActive) {
-			mTrailArray[i].create(pos);
+			mTrailArray[i].create(pos, *C_PARMS->mProperHallowParms.mTrailRadiusSize(), *C_PARMS->mProperHallowParms.mTrailLingerTime());
 			return;
 		}
 	}
@@ -86,7 +94,7 @@ void Obj::addTrail(Vector3f& pos) {
 	f32 minTime = mTrailArray[0].mTimer;
 	HallowMushi::Trail* targetTrail = &mTrailArray[0];
 
-	for (int i = 1; i < ARRAY_SIZE(mTrailArray); i++) {
+	for (int i = 1; i < mTrailCount; i++) {
 		if (minTime < mTrailArray[i].mTimer) {
 			targetTrail = &mTrailArray[i];
 			minTime = mTrailArray[i].mTimer;
@@ -94,7 +102,7 @@ void Obj::addTrail(Vector3f& pos) {
 	}
 
 	targetTrail->fade();
-	targetTrail->create(pos);
+	targetTrail->create(pos, *C_PARMS->mProperHallowParms.mTrailRadiusSize(), *C_PARMS->mProperHallowParms.mTrailLingerTime());
 }
 
 bool Obj::bombCallBack(Creature* source, Vector3f& direction, f32 damage) {
@@ -104,8 +112,8 @@ bool Obj::bombCallBack(Creature* source, Vector3f& direction, f32 damage) {
 	return DangoMushi::Obj::bombCallBack(source, direction, damage);
 }
 
-#define HALLOW_FALLING_BOMB_COUNT    (8)
-#define HALLOW_FALLING_DWEEVIL_COUNT (2)
+#define HALLOW_FALLING_BOMB_COUNT    (5)
+#define HALLOW_FALLING_DWEEVIL_COUNT (1)
 
 void Obj::createCrashEnemy() {
 	OSReport("Obj::createCrashEnemy()\n");
@@ -176,8 +184,8 @@ void Obj::createCrashEnemy() {
 				enemy->disableEvent(0, EB_Cullable); // rocks/eggs are always loaded to go off, even if you're not watching
 
 				// majorly increase trigger distance (for rocks, these are 75 and 150 by default; for eggs, 30 and 700)
-				*static_cast<DangoMushi::Parms*>(enemy->mParms)->mGeneral.mPrivateRadius() = 1000.0f;
-				*static_cast<DangoMushi::Parms*>(enemy->mParms)->mGeneral.mSightRadius()   = 1000.0f;
+				*C_PARMS->mGeneral.mPrivateRadius() = 1000.0f;
+				*C_PARMS->mGeneral.mSightRadius()   = 1000.0f;
 			}
 		}
 	}
@@ -193,7 +201,7 @@ void Obj::flickHandCollision(Creature* target)
 		targetPos.y = 1.0f;
 		targetPos *= 300.0f;
 
-		InteractDenki denki(this, *static_cast<DangoMushi::Parms*>(mParms)->mGeneral.mAttackDamage(), &targetPos);
+		InteractDenki denki(this, *C_PARMS->mGeneral.mAttackDamage(), &targetPos);
 		target->stimulate(denki);
 		return;
 	}
@@ -208,11 +216,11 @@ void Obj::flickHandCollision(Creature* target)
 		targetPos *= 300.0f;
 
 		if (static_cast<Piki*>(target)->getKind() == Yellow) {
-			InteractHanaChirashi wither(this, *static_cast<DangoMushi::Parms*>(mParms)->mGeneral.mAttackDamage(), &targetPos);
+			InteractHanaChirashi wither(this, *C_PARMS->mGeneral.mAttackDamage(), &targetPos);
 			target->stimulate(wither);
 		}
 		else {
-			InteractDenki denki(this, *static_cast<DangoMushi::Parms*>(mParms)->mGeneral.mAttackDamage(), &targetPos);
+			InteractDenki denki(this, *C_PARMS->mGeneral.mAttackDamage(), &targetPos);
 			target->stimulate(denki);
 		}
 	}
@@ -246,10 +254,10 @@ void Obj::setBodyCollision(bool check)
 			Creature* stuck = *iter;
 			if (stuck->isPiki()) {
 				if (static_cast<Piki*>(stuck)->getKind() == Purple) {
-					InteractFlick flick(this, *static_cast<DangoMushi::Parms*>(mParms)->mGeneral.mShakeKnockback(), *static_cast<DangoMushi::Parms*>(mParms)->mGeneral.mShakeDamage(), angle);
+					InteractFlick flick(this, *C_PARMS->mGeneral.mShakeKnockback(), *C_PARMS->mGeneral.mShakeDamage(), angle);
 					stuck->stimulate(flick);
 				} else {
-					InteractHanaChirashi wilt(this, *static_cast<DangoMushi::Parms*>(mParms)->mGeneral.mAttackDamage(), &effectPos);
+					InteractHanaChirashi wilt(this, *C_PARMS->mGeneral.mAttackDamage(), &effectPos);
 					stuck->stimulate(wilt);
 				}
 			}
@@ -258,7 +266,7 @@ void Obj::setBodyCollision(bool check)
 }
 
 void Obj::updateTrails() {
-	for (int i = 0; i < ARRAY_SIZE(mTrailArray); i++) {
+	for (int i = 0; i < mTrailCount; i++) {
 		if (mTrailArray[i].mActive) {
 			mTrailArray[i].update(this);
 		}
@@ -272,13 +280,13 @@ void Obj::doUpdate() {
 	if (mIsRolling) {
 		mLastTrailTimer -= sys->mDeltaTime;
 		if (mLastTrailTimer < 0.0f) {
-			mLastTrailTimer = 0.3f;
+			mLastTrailTimer = *C_PARMS->mProperHallowParms.mTrailPeriod();
 			Vector3f pos = getPosition();
 			addTrail(pos);
 		}
 	}
 	else {
-		mLastTrailTimer = 0.5f;
+		mLastTrailTimer = *C_PARMS->mProperHallowParms.mFirstTrailDelay();
 	}
 }
 

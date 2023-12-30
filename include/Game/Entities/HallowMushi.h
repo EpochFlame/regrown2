@@ -11,13 +11,13 @@ namespace HallowMushi
 {
 // 15 (time elpased rolling) / 0.3 (trail in-between time) 
 #define HALLOW_MAX_TRAIL_COUNT (50)
-#define HALLOW_TRAIL_LINGER_TIME (16.0f)
-#define TRAIL_RADIUS_SIZE (30.0f)
+#define HALLOW_TRAIL_LINGER_TIME (10.0f)
+#define TRAIL_RADIUS_SIZE (15.0f)
 #define TRAIL_HEIGHT (5.0f)
 
 struct Trail
 {
-	void create(Vector3f& position);
+	void create(Vector3f& position, f32 scale, f32 time);
 	void fade();
 	void update(EnemyBase*);
 
@@ -48,7 +48,10 @@ struct Obj : public DangoMushi::Obj {
 
 	virtual void doUpdate();
 
-	Trail mTrailArray[HALLOW_MAX_TRAIL_COUNT];
+	virtual void onInit(CreatureInitArg* settings);
+
+	int mTrailCount;
+	Trail* mTrailArray;
 	f32 mLastTrailTimer;
 };
 
@@ -77,10 +80,42 @@ struct Mgr : public EnemyMgrBase {
 	Obj* mObj;                                 // _48, array of Objs
 };
 
+struct Parms : public DangoMushi::Parms {
+
+	struct ProperParms : public Parameters {
+		inline ProperParms()
+		    : Parameters(nullptr, "EnemyParmsBase")
+		    , mTrailLingerTime(this, 'fp11', "lingering trail decay time", 10.0f, 0.3f, 30.0f)
+		    , mTrailRadiusSize(this, 'fp12', "lingering trail size", 15.0f, 1.0f, 100.0f)
+		    , mTrailHeight(this, 'fp13', "lingering trail interaction height", 10.0f, 0.0f, 360.0f)
+			, mTrailPeriod(this, 'fp14', "lingering trail spawn time peroid", 0.3f, 0.001f, 15.0f)
+			, mFirstTrailDelay(this, 'fp15', "delay before spawning the first trail in a roll", 0.5f, 0.001f, 15.0f)
+		{
+		}
+
+		Parm<f32> mTrailLingerTime;
+		Parm<f32> mTrailRadiusSize;
+		Parm<f32> mTrailHeight;
+		Parm<f32> mTrailPeriod;
+		Parm<f32> mFirstTrailDelay;
+	};
+
+	Parms() { }
+
+	virtual void read(Stream& stream) // _08 (weak)
+	{
+		DangoMushi::Parms::read(stream);
+		mProperHallowParms.read(stream);
+	}
+
+	// _00-_7F8	= EnemyParmsBase
+	ProperParms mProperHallowParms; // _7F8
+};
+
+
 } // namespace HallowMushi
 
 } // namespace Game
-
 
 
 
