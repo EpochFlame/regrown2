@@ -2,12 +2,32 @@
 #define _GAME_ENTITIES_HALLOWMUSHI_H
 
 #include "Game/Entities/DangoMushi.h"
+#include "efx/THallow.h"
 
 namespace Game
 {
 
 namespace HallowMushi
 {
+// 15 (time elpased rolling) / 0.3 (trail in-between time) 
+#define HALLOW_MAX_TRAIL_COUNT (50)
+#define HALLOW_TRAIL_LINGER_TIME (16.0f)
+#define TRAIL_RADIUS_SIZE (30.0f)
+#define TRAIL_HEIGHT (5.0f)
+
+struct Trail
+{
+	void create(Vector3f& position);
+	void fade();
+	void update(EnemyBase*);
+
+	bool mActive;
+	f32 mTimer;
+	Vector3f mPosition;
+	efx::THallow* mEffect;
+
+
+};
 
 struct Obj : public DangoMushi::Obj {
 	Obj();
@@ -17,6 +37,19 @@ struct Obj : public DangoMushi::Obj {
 	virtual f32 getDownSmokeScale() { return 1.3f; }      // _2EC (weak)
 	virtual f32 getDamageCoeStoneState() { return 0.2f; } // _2AC (weak)
     virtual EnemyTypeID::EEnemyTypeID getEnemyTypeID() { return EnemyTypeID::EnemyID_HallowMushi; }
+	virtual bool bombCallBack(Creature* source, Vector3f& direction, f32 damage);
+
+	void flickHandCollision(Creature*);
+	void setBodyCollision(bool check);
+	void createCrashEnemy();
+	void updateTrails();
+	void createEffect();
+	void addTrail(Vector3f& pos);
+
+	virtual void doUpdate();
+
+	Trail mTrailArray[HALLOW_MAX_TRAIL_COUNT];
+	f32 mLastTrailTimer;
 };
 
 struct Mgr : public EnemyMgrBase {

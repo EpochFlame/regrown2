@@ -703,7 +703,7 @@ void GeneralEnemyMgr::resetEnemyNum() { mEnemyNumInfo.resetEnemyNum(); }
  * Address:	8010D854
  * Size:	00022C
  */
-/*
+
 #pragma dont_inline on
 void GeneralEnemyMgr::addEnemyNum(int enemyID, u8 max, GenObjectEnemy* genObj)
 {
@@ -742,14 +742,21 @@ void GeneralEnemyMgr::addEnemyNum(int enemyID, u8 max, GenObjectEnemy* genObj)
                     // check if we're dealing with empress, since we need to handle falling rock spawns
                 } else if ((enemyID == EnemyTypeID::EnemyID_Queen) && (getEnemyNum(EnemyTypeID::EnemyID_Rock, true) < 10)) {
                     addEnemyNum(EnemyTypeID::EnemyID_Rock, 10, nullptr);
-                }
+                } else if (enemyID == EnemyTypeID::EnemyID_HallowMushi) {
+					if (getEnemyNum(EnemyTypeID::EnemyID_Bomb, true) < 30) {
+						addEnemyNum(EnemyTypeID::EnemyID_Bomb, 30, nullptr);
+					}
+					if (getEnemyNum(EnemyTypeID::EnemyID_BombOtakara, true) < 5) {
+						addEnemyNum(EnemyTypeID::EnemyID_BombOtakara, 5, nullptr);
+					}
+				}
                 break;
             }
         }
     }
 }
 #pragma dont_inline reset
-*/
+
 /*
  * --INFO--
  * Address:	8010DA80
