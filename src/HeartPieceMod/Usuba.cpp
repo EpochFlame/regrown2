@@ -350,7 +350,7 @@ void Obj::setupEffect()
 	effect->mEfxFireYodare.mMtx   = mtx;
 }
 
-void Obj::createEffect() { mFireEfx = new efx::TUsubaEffect(nullptr); }
+void Obj::createEffect() {  } //mFireEfx = new efx::TUsubaEffect(nullptr); }
 
 void Obj::createFireEffect()
 {

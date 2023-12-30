@@ -19,7 +19,6 @@
 #include "Game/Entities/Egg.h"
 #include "Game/Entities/ElecBug.h"
 #include "Game/Entities/ElecHiba.h"
-#include "Game/Entities/ElecMushi.h"
 #include "Game/Entities/ElecOtakara.h"
 #include "Game/Entities/Fart.h"
 #include "Game/Entities/FireChappy.h"
@@ -77,6 +76,8 @@
 #include "Game/MapMgr.h"
 #include "Game/Interaction.h"
 #include "LoadResource.h"
+
+#include "Game/Entities/HallowMushi.h"
 
 static const char matchText[] = "enemyBase";
 
@@ -393,8 +394,8 @@ void GeneralEnemyMgr::createEnemyMgr(u8 type, int enemyID, int limit)
 	case EnemyTypeID::EnemyID_Usuba:
 		mgr = new Usuba::Mgr(limit, type);
 		break;
-	case EnemyTypeID::EnemyID_ElecMushi:
-		mgr = new ElecMushi::Mgr(limit, type);
+	case EnemyTypeID::EnemyID_HallowMushi:
+		mgr = new HallowMushi::Mgr(limit, type);
 		break;
 	}
 

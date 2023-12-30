@@ -1,15 +1,13 @@
-#ifndef _GAME_ENTITIES_ELECMUSHI_H
-#define _GAME_ENTITIES_ELECMUSHI_H
+#ifndef _GAME_ENTITIES_HALLOWMUSHI_H
+#define _GAME_ENTITIES_HALLOWMUSHI_H
 
 #include "Game/Entities/DangoMushi.h"
 
-/**
- * --Header for Hallowed Crawbster (ElecMushi)--
- */
+namespace Game
+{
 
-namespace Game {
-namespace ElecMushi {
-struct FSM;
+namespace HallowMushi
+{
 
 struct Obj : public DangoMushi::Obj {
 	Obj();
@@ -18,15 +16,7 @@ struct Obj : public DangoMushi::Obj {
 	virtual ~Obj() { }                                    // _1BC (weak)
 	virtual f32 getDownSmokeScale() { return 1.3f; }      // _2EC (weak)
 	virtual f32 getDamageCoeStoneState() { return 0.2f; } // _2AC (weak)
-	virtual EnemyTypeID::EEnemyTypeID getEnemyTypeID()
-	{
-		return EnemyTypeID::EnemyID_ElecMushi;
-	} // _258 (weak)
-	  //////////////// VTABLE END
-
-	// _00 		= VTBL
-	// _00-_300	= DangoMushi::Obj
-	// _308 = PelletView
+    virtual EnemyTypeID::EEnemyTypeID getEnemyTypeID() { return EnemyTypeID::EnemyID_HallowMushi; }
 };
 
 struct Mgr : public EnemyMgrBase {
@@ -41,7 +31,7 @@ struct Mgr : public EnemyMgrBase {
 	virtual void loadTexData();                        // _D0
 	virtual EnemyTypeID::EEnemyTypeID getEnemyTypeID() // _AC (weak)
 	{
-		return EnemyTypeID::EnemyID_ElecMushi;
+		return EnemyTypeID::EnemyID_HallowMushi;
 	}
 	virtual J3DModelData* doLoadBmd(void* filename) // _D4 (weak)
 	{
@@ -53,7 +43,12 @@ struct Mgr : public EnemyMgrBase {
 	Sys::MatTevRegAnimation* mTevRegAnimation; // _44
 	Obj* mObj;                                 // _48, array of Objs
 };
-} // namespace ElecMushi
+
+} // namespace HallowMushi
+
 } // namespace Game
+
+
+
 
 #endif
