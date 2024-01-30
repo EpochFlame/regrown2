@@ -40,6 +40,7 @@ void FSM::init(EnemyBase* enemy)
 	registerState(new StateWait);
 	registerState(new StateMove);
 	registerState(new StateAttackBreath);
+	registerState(new StateAttackDive);
 }
 
 /*
@@ -556,8 +557,11 @@ void StateWait::exec(EnemyBase* enemy)
 	if (usuba->mCurAnim->mIsPlaying && usuba->mCurAnim->mType == KEYEVENT_END) {
 		if (target) {
 			usuba->mTargetCreature = target;
-			if (target) { // unfinished if
+			if (randFloat() <= *CG_PROPERPARMS(usuba).mFireBreathChance()) {
 				transit(usuba, USUBA_AttackBreath, nullptr);
+			}
+			else {
+				transit(usuba, USUBA_AttackDive, nullptr);
 			}
 			return;
 		}
@@ -654,6 +658,8 @@ void StateAttackBreath::init(EnemyBase* enemy, StateArg* stateArg)
 	usuba->startMotion(USUBAANIM_AttackBreath, nullptr);
 	usuba->createChargeSE();
 	usuba->startBossAttackBGM();
+
+	mIsFireDone = false;
 }
 
 /*
@@ -669,8 +675,27 @@ void StateAttackBreath::exec(EnemyBase* enemy)
 		return;
 	}
 
-	if (!usuba->isFireActive()) {
-		usuba->turnToTarget(usuba->mTargetCreature);
+	f32 frame = usuba->getMotionFrame();
+
+	if (!mIsFireDone && !usuba->isFireActive()) {
+		if (frame <= 40.0f) {
+			usuba->turnToTarget(usuba->mTargetCreature);
+		}
+		Vector3f targetPos = usuba->mTargetCreature->getPosition();
+		if (sqrDistanceXZ(targetPos, usuba->mPosition) < SQUARE(100.0f)) {
+
+			Vector3f distanceVec = targetPos - usuba->mPosition;
+			distanceVec.y = 0.0f;
+			f32 power = _normaliseXZ(distanceVec);
+
+			enemy->mTargetVelocity = distanceVec * (-*CG_PARMS(usuba)->mGeneral.mMoveSpeed());
+		}
+		else {
+			enemy->mTargetVelocity = Vector3f(0.0f);
+		}
+	}
+	else {
+		enemy->mTargetVelocity = Vector3f(0.0f);
 	}
 
 	if (!enemy->mCurAnim->mIsPlaying) {
@@ -687,6 +712,7 @@ void StateAttackBreath::exec(EnemyBase* enemy)
 		break;
 	case KEYEVENT_4:
 		usuba->endFireBreath();
+		mIsFireDone = true;
 		break;
 	case KEYEVENT_END:
 		if (usuba->mHealth <= 0.0f) {
@@ -732,6 +758,7 @@ void StateAttackDive::init(EnemyBase* enemy, StateArg* stateArg)
 	usuba->enableEvent(0, EB_Untargetable);
 	usuba->setEmotionExcitement();
 	usuba->startMotion(USUBAANIM_AttackDive, nullptr);
+	usuba->startBossAttackBGM();
 }
 
 /*
@@ -745,47 +772,49 @@ void StateAttackDive::exec(EnemyBase* enemy)
 	Creature* target = usuba->mTargetCreature;
 	if (target) {
 		f32 frame = usuba->getMotionFrame();
-		if (frame <= 10.0f) {
+		if (frame < 33.0f) {
 			usuba->setHeightVelocity();
 			usuba->changeFaceDir2(target);
-		} else if (frame <= 30.0f) {
-			if (usuba->mBounceTriangle) {
-				usuba->mStateTimer = 30.0f;
+		} else if (frame < 38.0f) { // after begin drop
+
+			f32 targetHeight = target->getPosition().y + 17.5f;
+			f32 usubaHeight  = usuba->getPosition().y;
+
+			Vector3f vel = usuba->getVelocity();
+			f32 factor   = ((targetHeight - usubaHeight) / sys->mDeltaTime) * *CG_PROPERPARMS(usuba).mFp31();
+
+			f32 vertSpeed;
+			if (factor < -2500.0f) {
+				vertSpeed = -2500.0f;
+			} else if (factor > 1000.0f) {
+				vertSpeed = 1000.0f;
+			} else {
+				vertSpeed = factor;
 			}
-
-			if (usuba->mStateTimer < 30.0f) {
-				f32 targetHeight = target->getPosition().y + 17.5f;
-				f32 usubaHeight  = usuba->getPosition().y;
-
-				Vector3f vel = usuba->getVelocity();
-				f32 factor   = ((targetHeight - usubaHeight) / sys->mDeltaTime) * *CG_PROPERPARMS(usuba).mFp31();
-
-				f32 vertSpeed;
-				if (factor < -2500.0f) {
-					vertSpeed = -2500.0f;
-				} else if (factor > 1000.0f) {
-					vertSpeed = 1000.0f;
-				} else {
-					vertSpeed = factor;
-				}
-				vel.y = vertSpeed;
-				usuba->setVelocity(vel);
-				if (frame > 16.0f) {
-					usuba->catchTarget();
-				}
-				usuba->changeFaceDir2(target);
-			}
-		} else {
+			vel.y = vertSpeed;
+			usuba->setVelocity(vel);
+			usuba->changeFaceDir2(target);
+		
+		} else if (frame < 55.0f) { // after hit ground
+			usuba->catchTarget();
+		} else if (frame < 57.0f) { // after return to height
 			usuba->setHeightVelocity();
 			f32 decayRate          = *CG_PROPERPARMS(usuba).mFp32();
 			usuba->mTargetVelocity = usuba->mTargetVelocity * decayRate;
 		}
+		else {
+			usuba->mTargetVelocity = 0.0f;
+		}
 	} else {
+		
 		transit(usuba, USUBA_Move, nullptr);
 	}
 
 	if (usuba->mCurAnim->mIsPlaying) {
-		if (usuba->mCurAnim->mType == KEYEVENT_2) {
+		switch (usuba->mCurAnim->mType)
+		{
+		case KEYEVENT_2:
+			// obtuse sarai math to make it actually go towards the piki
 			if (usuba->mTargetCreature) {
 				Vector3f targetPos = usuba->mTargetCreature->getPosition();
 				Vector3f usubaPos  = usuba->getPosition();
@@ -800,11 +829,13 @@ void StateAttackDive::exec(EnemyBase* enemy)
 				usuba->setVelocity(sep);
 				usuba->mTargetVelocity = sep;
 			}
-		} else if (usuba->mCurAnim->mType == KEYEVENT_3) {
+			break;
+		case KEYEVENT_3:
 			usuba->disableEvent(0, EB_NoInterrupt);
-
-		} else if (usuba->mCurAnim->mType == KEYEVENT_END) {
+			break;
+		case KEYEVENT_END: 
 			transit(usuba, USUBA_Move, nullptr);
+			break;
 		}
 	}
 }

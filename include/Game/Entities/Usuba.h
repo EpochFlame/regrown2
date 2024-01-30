@@ -109,6 +109,7 @@ struct Obj : public EnemyBase {
 	efx::TUsubaFireGround* mFireGroundEfx;	
 
 	bool mIsBreathingFire;        // _2D0
+	f32 mFireProgressTimer;
 	bool mIsFirePoolActive;
 	bool mIsElecBody;
 
@@ -152,6 +153,7 @@ struct Parms : public EnemyParmsBase {
 		    , mFp41(this, 'fp41', "Fall Meck ‘¬“x", 200.0f, 0.0f, 1000.0f)                   // 'Fall Meck speed'
 			, mFirePoolLingerTime(this, 'fp0A', "Fire Pool Lingering TIme", 5.0f, 0.0f, 30.0f)
 			, mFirePoolSpawnDistance(this, 'fp0B', "Fire Pool Spawn Distance", 200.0f, 0.0f, 1000.0f)
+			, mFireBreathChance(this, 'fp0C', "Fire Breath Chance", 0.0f, 0.0f, 1.0f)
 		{
 		}
 
@@ -171,6 +173,7 @@ struct Parms : public EnemyParmsBase {
 		Parm<f32> mFp41;                // _A0C, fp41
 		Parm<f32> mFirePoolLingerTime;
 		Parm<f32> mFirePoolSpawnDistance; 
+		Parm<f32> mFireBreathChance;
 	};
 
 	Parms() { }
@@ -298,6 +301,8 @@ struct StateAttackBreath : public State {
 	virtual void init(EnemyBase*, StateArg*); // _08
 	virtual void exec(EnemyBase*);            // _0C
 	virtual void cleanup(EnemyBase*);         // _10
+
+	bool mIsFireDone;
 
 	// _00		= VTBL
 	// _00-_10 	= EnemyFSMState

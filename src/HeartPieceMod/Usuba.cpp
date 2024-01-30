@@ -154,6 +154,13 @@ void Obj::doUpdate()
 		}
 	}
 
+	if (mIsBreathingFire && mFireProgressTimer < 1.0f) {
+		mFireProgressTimer += sys->mDeltaTime * 2.0f;
+		if (mFireProgressTimer > 1.0f) {
+			mFireProgressTimer = 1.0f;
+		}
+	}
+
 	// Drought Here: Don't do this lmao
 	// OSReport("Current state: %i\n", getStateID());
 }
@@ -435,7 +442,7 @@ bool Obj::attackTargets()
 
 			f32 lineprogress;
 
-			if (DroughtMath::getSqrDistanceToLine(creaturePos, lineStart, lineEnd, lineprogress) < SQUARE(50.0f) && lineprogress > 0.2f) {
+			if (DroughtMath::getSqrDistanceToLine(creaturePos, lineStart, lineEnd, lineprogress) < SQUARE(50.0f) && lineprogress > 0.2f && lineprogress < mFireProgressTimer) {
 				InteractFire fire (this, *C_PARMS->mGeneral.mAttackDamage());
 				creature->stimulate(fire);
 			}
@@ -518,12 +525,14 @@ void Obj::createGroundFire() {
 
 void Obj::startFireBreath() {
 	mIsBreathingFire = true;
+	mFireProgressTimer = 0.2f;
 	createFireEffect();
 	createDischargeSE();
 }
 
 void Obj::endFireBreath() {
 	mIsBreathingFire = false;
+	mFireProgressTimer = 0.2f;
 	fadeFireEffect();
 }
 
