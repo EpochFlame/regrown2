@@ -90,6 +90,8 @@ struct Obj : public EnemyBase {
 	FSM* mFsm;                    // _2BC
 	f32 mStateTimer;              // _2C0
 	Vector3f mTargetPos;          // _2C4
+
+	bool mIsInDive;
 	
 	private:
 	void createFireEffect();
@@ -101,6 +103,11 @@ struct Obj : public EnemyBase {
 	void startFirefly();
 	void fadeFirefly();
 
+	bool mIsBreathingFire;        // _2D0
+	bool mIsFirePoolActive;
+	bool mIsElecBody;
+	
+
 	Vector3f mFireGroundHitPos;
 	f32 mGroundedFireTimer;
 
@@ -108,10 +115,9 @@ struct Obj : public EnemyBase {
 	efx::TUsubaFirefly* mFireflyEfx;
 	efx::TUsubaFireGround* mFireGroundEfx;	
 
-	bool mIsBreathingFire;        // _2D0
 	f32 mFireProgressTimer;
-	bool mIsFirePoolActive;
-	bool mIsElecBody;
+
+	
 
 	
 };
